@@ -22,9 +22,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
-//(securedEnabled = true,
-//jsr250Enabled = true,
-//prePostEnabled = true) // by default
 public class WebSecurityConfig {
 	@Autowired
 	private UserDetailsServiceImpl userDetailsService;
@@ -62,9 +59,21 @@ public class WebSecurityConfig {
 		http.csrf(AbstractHttpConfigurer::disable)
 				.exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-				.authorizeHttpRequests(auth ->
-						auth.requestMatchers("/**").permitAll()
-								.anyRequest().authenticated()
+				.authorizeHttpRequests(auth -> auth
+						.requestMatchers(
+								"/images/**",
+								"/css/**",
+								"/js/**",
+								"/api/auth/**",
+								"/fragments/**",
+								"/",
+								"/login",
+								"/signup",
+								"/about",
+								"/contact"
+						)
+						.permitAll()
+						.anyRequest().authenticated()
 				);
 
 		http.authenticationProvider(authenticationProvider());

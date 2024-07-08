@@ -48,8 +48,7 @@ public class JwtUtils {
 	}
 
 	public ResponseCookie getCleanJwtCookie() {
-		ResponseCookie cookie = ResponseCookie.from(jwtCookie, null).path("/api").build();
-		return cookie;
+		return ResponseCookie.from(jwtCookie, null).path("/api").maxAge(0).httpOnly(true).build();
 	}
 
 	public String getUserNameFromJwtToken(String token) {

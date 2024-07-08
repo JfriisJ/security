@@ -1,10 +1,5 @@
 package dk.friisjakobsen.security.controllers;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import dk.friisjakobsen.security.models.ERole;
 import dk.friisjakobsen.security.models.Role;
 import dk.friisjakobsen.security.models.User;
@@ -17,7 +12,6 @@ import dk.friisjakobsen.security.repository.UserRepository;
 import dk.friisjakobsen.security.security.jwt.JwtUtils;
 import dk.friisjakobsen.security.security.service.UserDetailsImpl;
 import jakarta.validation.Valid;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -27,7 +21,14 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -48,13 +49,10 @@ public class AuthController {
 	@Autowired
 	JwtUtils jwtUtils;
 
-
-
 	@PostMapping("/signin")
 	public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
-
-		Authentication authentication = authenticationManager
-				.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+		Authentication authentication = authenticationManager.authenticate(
+				new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
 
 		SecurityContextHolder.getContext().setAuthentication(authentication);
 
@@ -102,13 +100,11 @@ public class AuthController {
 						Role adminRole = roleRepository.findByName(ERole.ROLE_ADMIN)
 								.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
 						roles.add(adminRole);
-
 						break;
 					case "mod":
 						Role modRole = roleRepository.findByName(ERole.ROLE_MODERATOR)
 								.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
 						roles.add(modRole);
-
 						break;
 					default:
 						Role userRole = roleRepository.findByName(ERole.ROLE_USER)
