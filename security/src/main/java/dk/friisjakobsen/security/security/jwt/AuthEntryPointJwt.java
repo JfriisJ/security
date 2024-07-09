@@ -27,6 +27,7 @@ public class AuthEntryPointJwt implements AuthenticationEntryPoint {
 //		logger.error("Unauthorized error: {}", authException.getMessage());
 //		response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Error: Unauthorized");
 //	}
+	/*
 	@Override
 	public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
 			throws IOException, ServletException {
@@ -44,4 +45,16 @@ public class AuthEntryPointJwt implements AuthenticationEntryPoint {
 		final ObjectMapper mapper = new ObjectMapper();
 		mapper.writeValue(response.getOutputStream(), body);
 	}
+
+	 */
+@Override
+public void commence(HttpServletRequest request, HttpServletResponse response,
+					 AuthenticationException authException) throws IOException, ServletException {
+	logger.error("Unauthorized error: {}", authException.getMessage());
+	logger.info("Request URI: {}", request.getRequestURI());
+	logger.info("Request Method: {}", request.getMethod());
+	logger.info("Request IP: {}", request.getRemoteAddr());
+	response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Error: Unauthorized");
+}
+
 }
