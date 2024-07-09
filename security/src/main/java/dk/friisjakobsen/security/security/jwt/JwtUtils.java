@@ -90,4 +90,5 @@ public class JwtUtils {
 				.signWith(key(), SignatureAlgorithm.HS256)
 				.compact();
 	}
+
 }

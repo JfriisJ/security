@@ -68,13 +68,8 @@ public class WebSecurityConfig {
 						.requestMatchers(
 								"/",
 								"/login",
-								"/signup"
-						).permitAll()
-						.requestMatchers(
-								new AntPathRequestMatcher("/css/styles.css"),
-								new AntPathRequestMatcher("/js/scripts.js"),
-								new AntPathRequestMatcher("/images/**")
-
+								"/signup",
+								"/favicon.ico"
 						).permitAll()
 				.requestMatchers("/admin/**").hasRole("ADMIN")
 						.requestMatchers("/user/**").hasRole("USER")
