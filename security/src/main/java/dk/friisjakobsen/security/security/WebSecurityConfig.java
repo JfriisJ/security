@@ -60,24 +60,26 @@ public class WebSecurityConfig {
 				.exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(auth -> auth
-						.requestMatchers(
-								"/images/**",
-								"/css/**",
-								"/js/**",
-								"/api/auth/**",
-								"/fragments/**",
-								"/",
-								"/login",
-								"/signup",
-								"/about",
-								"/contact"
-						)
-						.permitAll()
+						.requestMatchers("/").permitAll()
+						.requestMatchers("/images/**").permitAll()
+						.requestMatchers("/css/**").permitAll()
+						.requestMatchers("/api/auth/**").permitAll()
+						.requestMatchers("/api/test/**").permitAll()
 						.anyRequest().authenticated()
+				)
+				.formLogin(formLogin -> formLogin
+						.loginPage("/login")
+						.defaultSuccessUrl("/", true)
+						.permitAll()
+				)
+				.formLogin(formLogin -> formLogin
+						.loginPage("/signup")
+						.defaultSuccessUrl("/", true)
+						.permitAll()
 				);
 
-		http.authenticationProvider(authenticationProvider());
 		http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+		http.authenticationProvider(authenticationProvider());
 
 		return http.build();
 	}
