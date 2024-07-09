@@ -1,5 +1,6 @@
 package dk.friisjakobsen.security.controllers;
 
+import dk.friisjakobsen.security.models.ERole;
 import dk.friisjakobsen.security.models.Role;
 import dk.friisjakobsen.security.models.User;
 import dk.friisjakobsen.security.payload.request.LoginRequest;
@@ -67,9 +68,7 @@ public class AuthController {
 
 	@PostMapping("/login")
 	@PreAuthorize("permitAll()")
-	public ResponseEntity<?> authenticateUser(@ModelAttribute("loginRequest") LoginRequest loginRequest) {
-
-		logger.info("Login request: " + loginRequest.getUsername() + " " + loginRequest.getPassword());
+	public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
 
 		Authentication authentication = authenticationManager
 				.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
@@ -81,13 +80,10 @@ public class AuthController {
 		ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(userDetails);
 
 		List<String> roles = userDetails.getAuthorities().stream()
-				.map(GrantedAuthority::getAuthority)
+				.map(item -> item.getAuthority())
 				.collect(Collectors.toList());
 
-		return ResponseEntity.ok()
-				.header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
-				.header(HttpHeaders.AUTHORIZATION, "Bearer " + jwtUtils.generateTokenFromUsername(userDetails.getUsername()))
-				.header(HttpHeaders.LOCATION, "/") // Redirect to the home page
+		return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, jwtCookie.toString(),HttpHeaders.AUTHORIZATION, "Bearer " + jwtCookie.getValue())
 				.body(new UserInfoResponse(userDetails.getId(),
 						userDetails.getUsername(),
 						userDetails.getEmail(),
@@ -102,7 +98,6 @@ public class AuthController {
 
 	@PostMapping("/signup")
 	public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
-		logger.info("Signup request: " + signUpRequest.getUsername() + " " + signUpRequest.getEmail() + " " + signUpRequest.getRole());
 		if (userRepository.existsByUsername(signUpRequest.getUsername())) {
 			return ResponseEntity.badRequest().body(new MessageResponse("Error: Username is already taken!"));
 		}
@@ -119,30 +114,37 @@ public class AuthController {
 		Set<String> strRoles = signUpRequest.getRole();
 		Set<Role> roles = new HashSet<>();
 
-		// Existing role assignment code...
+		if (strRoles == null) {
+			Role userRole = roleRepository.findByName(ERole.ROLE_USER)
+					.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+			roles.add(userRole);
+		} else {
+			strRoles.forEach(role -> {
+				switch (role) {
+					case "admin":
+						Role adminRole = roleRepository.findByName(ERole.ROLE_ADMIN)
+								.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+						roles.add(adminRole);
+
+						break;
+					case "mod":
+						Role modRole = roleRepository.findByName(ERole.ROLE_MODERATOR)
+								.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+						roles.add(modRole);
+
+						break;
+					default:
+						Role userRole = roleRepository.findByName(ERole.ROLE_USER)
+								.orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+						roles.add(userRole);
+				}
+			});
+		}
 
 		user.setRoles(roles);
 		userRepository.save(user);
 
-		// Authenticate the new user
-		UserDetailsImpl userDetails = authentication(signUpRequest.getUsername(), signUpRequest.getPassword());
-
-		ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(userDetails);
-
-		List<String> userRoles = userDetails.getAuthorities().stream()
-				.map(item -> item.getAuthority())
-				.collect(Collectors.toList());
-
-		// Create a response object that includes the redirect URL
-		Map<String, Object> response = new HashMap<>();
-		response.put("redirectUrl", "/"); // The URL to redirect to
-		response.put("userInfo", new UserInfoResponse(userDetails.getId(),
-				userDetails.getUsername(),
-				userDetails.getEmail(),
-				userRoles));
-
-		return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
-				.body(response);
+		return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
 	}
 
 	private UserDetailsImpl authentication(String username, String password){
