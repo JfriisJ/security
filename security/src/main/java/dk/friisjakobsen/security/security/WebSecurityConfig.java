@@ -61,17 +61,24 @@ public class WebSecurityConfig {
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers("/").permitAll()
-						.requestMatchers("/images/**").permitAll()
-						.requestMatchers("/css/**").permitAll()
-						.requestMatchers("/api/auth/**").permitAll()
+
+						// allow access to static resources
+						.requestMatchers("/images/**", "/css/**", "/js/**","/favicon.ico","/error").permitAll()
+						// allow access to login and signup
+						.requestMatchers("/login", "/signup").permitAll()
+						// allow access to login and signup
+						.requestMatchers("/api/auth/login","/api/auth/signin").permitAll()
+						// allow access to test API
 						.requestMatchers("/api/test/**").permitAll()
 						.anyRequest().authenticated()
 				)
+				// configure form login
 				.formLogin(formLogin -> formLogin
 						.loginPage("/login")
 						.defaultSuccessUrl("/", true)
 						.permitAll()
 				)
+				// configure form signup
 				.formLogin(formLogin -> formLogin
 						.loginPage("/signup")
 						.defaultSuccessUrl("/", true)

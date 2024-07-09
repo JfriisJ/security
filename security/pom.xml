@@ -14,6 +14,7 @@
         <swagger.version>2.1.12</swagger.version>
         <jjwt.version>0.11.5</jjwt.version>
         <jackson.version>2.15.0</jackson.version> <!-- Add Jackson version property -->
+        <thymeleaf-extras.version>3.1.2.RELEASE</thymeleaf-extras.version>
     </properties>
 
     <dependencies>
@@ -51,6 +52,11 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
             <version>${spring-boot.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.thymeleaf.extras</groupId>
+            <artifactId>thymeleaf-extras-springsecurity6</artifactId>
+            <version>${thymeleaf-extras.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

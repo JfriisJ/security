@@ -30,20 +30,5 @@ public class HomeController {
 		return "signup";
 	}
 
-	@GetMapping("/about")
-	public String aboutPage(Model model) {
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		boolean isLoggedIn = authentication != null && authentication.isAuthenticated() && !(authentication.getPrincipal() instanceof String);
-		model.addAttribute("isLoggedIn", isLoggedIn);
-		return "about";
-	}
-
-	@GetMapping("/contact")
-	public String contactPage(Model model) {
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		boolean isLoggedIn = authentication != null && authentication.isAuthenticated() && !(authentication.getPrincipal() instanceof String);
-		model.addAttribute("isLoggedIn", isLoggedIn);
-		return "contact";
-	}
 
 }
