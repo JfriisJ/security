@@ -9,20 +9,24 @@
 <body>
 <header th:insert="~{fragments/header :: header}"> </header>
 
-
-<h1 class="display-4">Thymeleaf - WebSecurity</h1>
-<p>This is a demo of Thymeleaf and Spring-Security integration.</p>
-<h2>Private pages</h2>
-<p>This is a public page, but you can navigate to protected pages to trigger authentication.</p>
-<ul>
-    <ul>Go to <a href="admin/index.html" th:href="@{/admin/index.html}">administration zone</a> (only admins)</ul>
-    <ul>Go to <a href="user/index.html" th:href="@{/user/index.html}">user zone</a> (only users)</ul>
-    <ul>Go to <a href="shared/index.html" th:href="@{shared/index.html}">shared zone</a> (both users and admins)</ul>
-</ul>
-<h2 class="display-4">Exception handling</h2>
-<ul>
-    <ul>You can <a href="error.html" th:href="@{/simulateError}">simulate an exception</a> to see custom ErrorPage.</ul>
-</ul>
+<div class="container mt-5">
+    <h1 class="display-4">User Profile</h1>
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Welcome, <span th:text="${username}">User</span></h5>
+            <p class="card-text"><strong>Email:</strong> <span th:text="${email}">user@example.com</span></p>
+            <p class="card-text"><strong>Roles:</strong>
+            <ul>
+                <li th:each="role : ${roles}" th:text="${role.getAuthority()}">ROLE_USER</li>
+            </ul>
+            </p>
+            <a href="/" class="btn btn-primary">Home</a>
+            <form th:action="@{/api/auth/logout}" method="post" class="d-inline">
+                <button class="btn btn-danger" type="submit">Logout</button>
+            </form>
+        </div>
+    </div>
+</div>
 <footer th:insert="~{fragments/footer :: footer}"> </footer>
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>

@@ -17,32 +17,32 @@ body {
 .hero h2 {
     font-size: 36px;
     margin-bottom: 20px;
-    color: #21d31c; /* Matching the green from the Spring Security logo */
+    color: #21d31c;
 }
 
 .hero .btn {
     padding: 10px 20px;
     font-size: 18px;
     border-radius: 5px;
-    background-color: #21d31c; /* Matching the green from the Spring Security logo */
+    background-color: #21d31c;
     color: #1e1e1e;
     transition: background 0.3s;
 }
 
 .hero .btn:hover {
-    background: #188914; /* Darker green for hover effect */
+    background: #188914;
 }
 
 .nav-link {
-    color: #21d31c; /* Matching the green from the Spring Security logo */
+    color: #21d31c;
 }
 
 .nav-link:hover {
-    color: #0f5e09; /* Darker green for hover effect */
+    color: #0f5e09;
 }
 
 .btn-outline-light {
-    color: #21d31c; /* Matching the green from the Spring Security logo */
+    color: #21d31c;
     border-color: #21d31c;
 }
 
@@ -53,5 +53,28 @@ body {
 }
 
 .display-4 {
+    text-align: center;
+}
+h2 {
+    text-align: center;
+}
+
+p {
+    text-align: center;
+}
+
+ul {
+    text-align: center;
+}
+
+li {
+    text-align: center;
+}
+
+a {
+    text-align: center;
+}
+
+form {
     text-align: center;
 }

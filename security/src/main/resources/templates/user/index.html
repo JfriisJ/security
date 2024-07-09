@@ -9,23 +9,23 @@
 <body>
 <header class="bg-dark text-white py-3 mt-auto" th:fragment="header">
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <a class="navbar-brand" href="#" th:href="@{/}">WebSecurity</a>
+        <a class="navbar-brand" href="../index.html" th:href="@{/index.html}">WebSecurity</a>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item" sec:authorize="isAnonymous()">
-                    <a class="nav-link" href="../security/login.html" th:href="@{/login}">Login</a>
+                    <a class="nav-link" href="login.html" th:href="@{/templates/security/login.html}">Login</a>
                 </li>
                 <li class="nav-item" sec:authorize="isAnonymous()">
-                    <a class="nav-link" href="../security/signup.html" th:href="@{/signup}">Signup</a>
+                    <a class="nav-link" href="signup.html" th:href="@{/templates/security/signup.html}">Signup</a>
                 </li>
                 <li class="nav-item dropdown" sec:authorize="isAuthenticated()">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <span sec:authentication="name">User</span>
                     </a>
                     <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        <a class="dropdown-item" href="shared/profile.html" th:href="@{profile}">Profile</a>
+                        <a class="dropdown-item" href="profile.html" th:href="@{/profile}">Profile</a>
                         <div class="dropdown-divider"></div>
-                        <form th:action="@{/logout}" th:object="logout" method="post" class="form-inline">
+                        <form th:action="@{/api/auth/logout}" method="post" class="form-inline">
                             <button class="dropdown-item" type="submit">Logout</button>
                         </form>
                     </div>
@@ -34,4 +34,15 @@
         </div>
     </nav>
 </header>
+<div th:replace="index::logout"></div>
+<h1>Thymeleaf - WebSecurity</h1>
+<p>This is the <b>user</b> zone</p>
+<p>Only authenticated users with role <b>USER</b> are allowed to see this page.</p>
+<p><a href="../index.html" th:href="@{/index.html}">Back to home page</a></p>
+<footer class="bg-dark text-white py-3 mt-auto" th:fragment="footer">
+    <div class="container text-center">
+        <p>&copy; 2024 Vennekredsen. All rights reserved.</p>
+    </div>
+</footer>
 </body>
+</html>

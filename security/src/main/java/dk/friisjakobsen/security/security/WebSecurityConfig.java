@@ -18,6 +18,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
@@ -55,38 +56,41 @@ public class WebSecurityConfig {
 	}
 
 	@Bean
-	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-		http.csrf(AbstractHttpConfigurer::disable)
-				.exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
-				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-				.authorizeHttpRequests(auth -> auth
-						.requestMatchers("/").permitAll()
+	public SecurityFilterChain filterChain(final HttpSecurity http) throws Exception {
+		http
+				.csrf(AbstractHttpConfigurer::disable)
+				.exceptionHandling(exceptionHandling -> exceptionHandling
+						.authenticationEntryPoint(unauthorizedHandler)
+						.accessDeniedPage("/403.html"))
+				.sessionManagement(sessionManagement -> sessionManagement
+						.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+				.authorizeHttpRequests(authorize -> authorize
+						.requestMatchers(
+								"/",
+								"/login",
+								"/signup"
+						).permitAll()
+						.requestMatchers(
+								new AntPathRequestMatcher("/css/styles.css"),
+								new AntPathRequestMatcher("/js/scripts.js"),
+								new AntPathRequestMatcher("/images/**")
 
-						// allow access to static resources
-						.requestMatchers("/images/**", "/css/**", "/js/**","/favicon.ico","/error").permitAll()
-						// allow access to login and signup
-						.requestMatchers("/login", "/signup").permitAll()
-						// allow access to login and signup
-						.requestMatchers("/api/auth/login","/api/auth/signin").permitAll()
-						// allow access to test API
-						.requestMatchers("/api/test/**").permitAll()
-						.anyRequest().authenticated()
-				)
-				// configure form login
+						).permitAll()
+				.requestMatchers("/admin/**").hasRole("ADMIN")
+						.requestMatchers("/user/**").hasRole("USER")
+						.requestMatchers("/shared/**").hasAnyRole("USER", "ADMIN")
+						.requestMatchers("/error").permitAll()
+						.anyRequest().authenticated())
 				.formLogin(formLogin -> formLogin
 						.loginPage("/login")
 						.defaultSuccessUrl("/", true)
-						.permitAll()
-				)
-				// configure form signup
-				.formLogin(formLogin -> formLogin
-						.loginPage("/signup")
-						.defaultSuccessUrl("/", true)
-						.permitAll()
-				);
-
-		http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
-		http.authenticationProvider(authenticationProvider());
+						.failureUrl("/login-error.html")
+						.permitAll())
+				.logout(logout -> logout
+						.logoutUrl("/logout")
+						.logoutSuccessUrl("/index.html")
+						.permitAll())
+				.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
 
 		return http.build();
 	}
