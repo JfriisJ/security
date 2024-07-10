@@ -73,6 +73,11 @@ public class AuthController {
 		Authentication authentication = authenticationManager
 				.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
 
+		if (authentication == null) {
+			logger.error("Invalid credentials");
+			return ResponseEntity.badRequest().body(new MessageResponse("Error: Invalid credentials!"));
+		}
+
 		SecurityContextHolder.getContext().setAuthentication(authentication);
 
 		UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
@@ -82,7 +87,7 @@ public class AuthController {
 		List<String> roles = userDetails.getAuthorities().stream()
 				.map(item -> item.getAuthority())
 				.collect(Collectors.toList());
-
+		logger.info("User authenticated: " + userDetails.getUsername());
 		return ResponseEntity.ok()
 				.header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
 				.header(HttpHeaders.LOCATION, "/") // Redirect to the home page
@@ -90,6 +95,8 @@ public class AuthController {
 						userDetails.getUsername(),
 						userDetails.getEmail(),
 						roles));
+
+
 	}
 
 	@GetMapping("/signup")
