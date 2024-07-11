@@ -4,33 +4,35 @@
     <title>Thymeleaf - WebSecurity</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="../css/styles.css" th:href="@{../css/styles.css}" />
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+    <link href="https://getbootstrap.com/docs/4.0/examples/signin/signin.css" rel="stylesheet" crossorigin="anonymous">
 </head>
 <body>
 <header th:insert="~{fragments/header :: header}"> </header>
-
-<main class="container my-5">
+<main class="form-signin" method="post" action="/signup">
     <div class="row justify-content-center">
-        <div class="col-md-6">
-            <h2 class="text-center mt-5">Sign Up</h2>
-            <form id="signup-form" class="mt-4">
-                <div class="form-group">
-                    <label for="username">Username</label>
-                    <input type="text" class="form-control" id="username" name="username" required>
-                </div>
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" class="form-control" id="email" name="email" required>
-                </div>
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" class="form-control" id="password" name="password" required>
-                </div>
-                <button type="submit" class="btn btn-primary btn-block">Sign Up</button>
-            </form>
+        <div class="col-md-12">
+            <h2 class="form-signin-heading text-center">Please sign up</h2>
+            <p>
+                <label for="username" class="sr-only">Username</label>
+                <input type="text" id="username" name="username" class="form-control" placeholder="Username" required=""
+                       autofocus="">
+            </p>
+            <p>
+                <label for="password" class="sr-only">Password</label>
+                <input type="password" id="password" name="password" class="form-control" placeholder="Password"
+                       required="">
+            </p>
+            <p>
+                <label for="email" class="sr-only">Email</label>
+                <input type="email" id="email" name="email" class="form-control" placeholder="Email"
+                       required="">
+            </p>
+            <button class="btn btn-lg btn-primary btn-block" type="submit">Sign up</button>
+            <p><a text="center" href="#" th:href="@{/} ">Back to home page</a></p>
         </div>
     </div>
-    <p><a href="../index.html" th:href="@{/index.html}">Back to home page</a></p>
 </main>
 <footer th:insert="~{fragments/footer :: footer}"> </footer>
 </body>

@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -37,36 +38,38 @@ import java.util.stream.Collectors;
 
 //@CrossOrigin(origins = "*", maxAge = 3600)
 @Controller
-//@RequestMapping("/")
+@RequestMapping("/")
 public class AuthController {
-	@Autowired
-	AuthenticationManager authenticationManager;
 
-	@Autowired
-	UserRepository userRepository;
+	private final AuthenticationManager authenticationManager;
 
-	@Autowired
-	RoleRepository roleRepository;
+	private final UserRepository userRepository;
 
-	@Autowired
-	PasswordEncoder encoder;
+	private final RoleRepository roleRepository;
 
-	@Autowired
-	JwtUtils jwtUtils;
+	private final PasswordEncoder encoder;
+
+	private final JwtUtils jwtUtils;
 
 	Logger logger = LoggerFactory.getLogger(AuthController.class);
 
-	@GetMapping("/login")
+	public AuthController(AuthenticationManager authenticationManager, UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder encoder, JwtUtils jwtUtils) {
+		this.authenticationManager = authenticationManager;
+		this.userRepository = userRepository;
+		this.roleRepository = roleRepository;
+		this.encoder = encoder;
+		this.jwtUtils = jwtUtils;
+	}
+
+	@GetMapping("login")
 	@PreAuthorize("permitAll()")
-	public String login(Model model, @AuthenticationPrincipal UserDetails userDetails) {
-		addAuthenticationDetails(model, userDetails);
-		model.addAttribute("loginRequest", new LoginRequest()); // Ensure loginRequest is added to the model
+	public String login() {
 		return "security/login";
 	}
 
-	@PostMapping("/login")
+	@PostMapping("login")
 	@PreAuthorize("permitAll()")
-	public ResponseEntity<?> authenticateUser(@ModelAttribute("loginRequest") LoginRequest loginRequest) {
+	public ResponseEntity<?> authenticateUser(LoginRequest loginRequest) {
 
 		logger.info("Login request: " + loginRequest.getUsername() + " " + loginRequest.getPassword());
 
@@ -87,7 +90,9 @@ public class AuthController {
 		List<String> roles = userDetails.getAuthorities().stream()
 				.map(item -> item.getAuthority())
 				.collect(Collectors.toList());
+
 		logger.info("User authenticated: " + userDetails.getUsername());
+		System.out.println("User authenticated: " + userDetails.getUsername());
 		return ResponseEntity.ok()
 				.header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
 				.header(HttpHeaders.LOCATION, "/") // Redirect to the home page
@@ -99,13 +104,13 @@ public class AuthController {
 
 	}
 
-	@GetMapping("/signup")
+	@GetMapping("signup")
 	public String signup(Model model, @AuthenticationPrincipal UserDetails userDetails) {
 		addAuthenticationDetails(model, userDetails);
 		return "security/signup";
 	}
 
-	@PostMapping("/signup")
+	@PostMapping("signup")
 	public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
 		logger.info("Signup request: " + signUpRequest.getUsername() + " " + signUpRequest.getEmail() + " " + signUpRequest.getRole());
 		if (userRepository.existsByUsername(signUpRequest.getUsername())) {
@@ -150,17 +155,8 @@ public class AuthController {
 				.body(response);
 	}
 
-	private UserDetailsImpl authentication(String username, String password){
-		Authentication authentication = authenticationManager
-				.authenticate(new UsernamePasswordAuthenticationToken(username, password));
 
-		SecurityContextHolder.getContext().setAuthentication(authentication);
-
-		UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-
-		return userDetails;
-	}
-	@PostMapping("/logout")
+	@PostMapping("logout")
 	@PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
 	public ResponseEntity<?> logoutUser(HttpServletRequest request, HttpServletResponse response) {
 		logger.info("Signing out user...");
@@ -172,6 +168,45 @@ public class AuthController {
 		return ResponseEntity.ok().body(new MessageResponse("You've been signed out!"));
 	}
 
+	@GetMapping("/profile")
+	@PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
+	public String profile(Model model, @AuthenticationPrincipal UserDetails userDetails) {
+		addAuthenticationDetails(model, userDetails);
+		User user = userRepository.findByUsername(userDetails.getUsername()).get();
+		model.addAttribute("email", user.getEmail());
+		model.addAttribute("roles", user.getRoles());
+		model.addAttribute("username", user.getUsername());
+
+		System.out.println("User: " + user.getUsername() + " " + user.getEmail() + " " + user.getRoles());
+		return "shared/profile";
+	}
+
+	@PostMapping("profile/update")
+	@PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
+	public ResponseEntity<?> updateProfile(@AuthenticationPrincipal UserDetails userDetails, @RequestBody SignupRequest signUpRequest) {
+		logger.info("Updating profile for user: " + userDetails.getUsername());
+		User user = userRepository.findByUsername(userDetails.getUsername()).get();
+		user.setEmail(signUpRequest.getEmail());
+		userRepository.save(user);
+		return ResponseEntity.ok().body(new MessageResponse("Profile updated successfully!"));
+	}
+
+	@PostMapping("/update/{id}")
+	public ResponseEntity<?> updateUser(@PathVariable("id") long id, @RequestBody User user) {
+		logger.info("Updating user with id: " + id);
+		Optional<User> userData = userRepository.findById(id);
+
+		if (userData.isPresent()) {
+			User _user = userData.get();
+			_user.setUsername(user.getUsername());
+			_user.setEmail(user.getEmail());
+			_user.setPassword(user.getPassword());
+			return new ResponseEntity<>(userRepository.save(_user), HttpStatus.OK);
+		} else {
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+	}
+
 	private void addAuthenticationDetails(Model model, UserDetails userDetails) {
 		if (userDetails != null) {
 			model.addAttribute("isLoggedIn", true);
@@ -180,5 +215,17 @@ public class AuthController {
 		} else {
 			model.addAttribute("isLoggedIn", false);
 		}
+	}
+
+
+	private UserDetailsImpl authentication(String username, String password){
+		Authentication authentication = authenticationManager
+				.authenticate(new UsernamePasswordAuthenticationToken(username, password));
+
+		SecurityContextHolder.getContext().setAuthentication(authentication);
+
+		UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+
+		return userDetails;
 	}
 }

@@ -1,35 +1,115 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
 <head>
-    <title>Thymeleaf - WebSecurity</title>
+    <title>Profile Page</title>
     <meta charset="utf-8" />
-    <link rel="stylesheet" href="css/styles.css" th:href="@{css/styles.css}" />
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../css/styles.css" th:href="@{../css/styles.css}" />
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+    <link href="https://getbootstrap.com/docs/4.0/examples/signin/signin.css" rel="stylesheet" crossorigin="anonymous">
 </head>
 <body>
 <header th:insert="~{fragments/header :: header}"> </header>
 
-<div class="container mt-5">
-    <h1 class="display-4">User Profile</h1>
-    <div class="card">
-        <div class="card-body">
-            <h5 class="card-title">Welcome, <span th:text="${username}">User</span></h5>
-            <p class="card-text"><strong>Email:</strong> <span th:text="${email}">user@example.com</span></p>
-            <p class="card-text"><strong>Roles:</strong>
-            <ul>
-                <li th:each="role : ${roles}" th:text="${role.getAuthority()}">ROLE_USER</li>
-            </ul>
-            </p>
-            <a href="/" class="btn btn-primary">Home</a>
-            <form th:action="@{/api/auth/logout}" method="post" class="d-inline">
-                <button class="btn btn-danger" type="submit">Logout</button>
+<main class="container">
+    <form class="form" method="POST" th:action="@{/profile/update}">
+        <div class="row justify-content-center">
+            <div class="col-md-12">
+                <h2 class="form-signin-heading text-center">Profile</h2>
+                <p>
+                    <label for="username" class="sr-only">Username</label>
+                    <input type="text" id="username" name="username" class="form-control" placeholder="Username" required=""
+                           th:field="*{username}" readonly>
+                    <input type="text" id="username2" name="username" class="form-control" th:placeholder="user" required=""
+                           sec:authentication="name">
+                    <span sec:authentication="name">User</span>
+                </p>
+                <p>
+                    <label for="email" class="sr-only">Email</label>
+                    <input type="email" id="email" name="email" class="form-control" placeholder="Email" required=""
+                           th:field="*{email}">
+                </p>
+                <p>
+                    <label for="role" class="sr-only">Role</label>
+                    <input type="text" id="role" name="role" class="form-control" placeholder="Role" required=""  th:field="*{roles}" readonly>
+                </p>
+                <p>
+                    <button class="btn btn-lg btn-secondary btn-block" type="button" data-toggle="modal" data-target="#changePasswordModal">Change Password</button>
+                </p>
+                <button class="btn btn-lg btn-primary btn-block" type="submit">Update Profile</button>
+                <p><a text="center" href="#" th:href="@{/}">Back to home page</a></p>
+            </div>
+        </div>
+    </form>
+    <form action="#"
+          th:action="@{/update/{id}(id=${user.id})}"
+          th:object="${user}"
+          method="post">
+        <label for="name">Name</label>
+        <input type="text" th:field="*{name}" id="name" placeholder="Name">
+        <span th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></span>
+        <label for="email">Email</label>
+        <input type="text" th:field="*{email}" id="email" placeholder="Email">
+        <span th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></span>
+        <input type="submit" value="Update User">
+    </form>
+</main>
+
+<!-- Change Password Modal -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1" role="dialog" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form method="POST" th:action="@{/password/change}" onsubmit="return validatePasswordChange()">
+<!--                <div th:if="${#fields.hasErrors()}">-->
+<!--                    <div th:each="error : ${#fields.errors('*')}">-->
+<!--                        <p th:text="${error}"></p>-->
+<!--                    </div>-->
+<!--                </div>-->
+                <div class="modal-header">
+                    <h5 class="modal-title" id="changePasswordModalLabel">Change Password</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+<!--                    <input type="hidden" th:field="*{csrf.token}" />-->
+                    <div class="form-group">
+                        <label for="currentPassword">Current Password</label>
+                        <input type="password" class="form-control" id="currentPassword" name="currentPassword" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="newPassword">New Password</label>
+                        <input type="password" class="form-control" id="newPassword" name="newPassword" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmNewPassword">Confirm New Password</label>
+                        <input type="password" class="form-control" id="confirmNewPassword" name="confirmNewPassword" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                </div>
             </form>
         </div>
     </div>
 </div>
+
 <footer th:insert="~{fragments/footer :: footer}"> </footer>
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-T0A6YjOVTMj2hMEl2am6ntoU+aV8TwSDzD6rC45FfGftI23EL8gfPLb6U2E4zvJ" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-A3ZvDMMdO8Z2zN2mtzX2uSQQj/pVXNAAE4B97ZT8GxtOBHhwb5WF5LG7xFC5a6wD" crossorigin="anonymous"></script>
+<script>
+    function validatePasswordChange() {
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+        if (newPassword !== confirmNewPassword) {
+            alert('New passwords do not match!');
+            return false;
+        }
+        return true;
+    }
+</script>
 </body>
 </html>
