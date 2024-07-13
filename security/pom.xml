@@ -15,6 +15,7 @@
         <jjwt.version>0.11.5</jjwt.version>
         <jackson.version>2.15.0</jackson.version> <!-- Add Jackson version property -->
         <thymeleaf-extras.version>3.1.2.RELEASE</thymeleaf-extras.version>
+        <jakarta.bind.version>4.0.2</jakarta.bind.version>
     </properties>
 
     <dependencies>
@@ -132,6 +133,11 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
             <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
+            <version>${jakarta.bind.version}</version>
         </dependency>
     </dependencies>
 

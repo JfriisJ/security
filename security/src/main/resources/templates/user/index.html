@@ -2,8 +2,11 @@
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
 <head>
     <title>Thymeleaf - WebSecurity</title>
-    <meta charset="utf-8" />
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <meta charset="utf-8"/>
+    <link rel="stylesheet" href="../css/styles.css" th:href="@{../css/styles.css}"/>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+    <link href="https://getbootstrap.com/docs/4.0/examples/signin/signin.css" rel="stylesheet" crossorigin="anonymous">
 </head>
 <style>
     /* styles.css */
@@ -63,33 +66,8 @@
 
 </style>
 <body>
-<header class="bg-dark text-white py-3 mt-auto" th:fragment="header">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <a class="navbar-brand" href="../index.html" th:href="@{/index.html}">WebSecurity</a>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ml-auto">
-                <li class="nav-item" sec:authorize="isAnonymous()">
-                    <a class="nav-link" href="login.html" th:href="@{/templates/security/login.html}">Login</a>
-                </li>
-                <li class="nav-item" sec:authorize="isAnonymous()">
-                    <a class="nav-link" href="signup.html" th:href="@{/templates/security/signup.html}">Signup</a>
-                </li>
-                <li class="nav-item dropdown" sec:authorize="isAuthenticated()">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        <span sec:authentication="name">User</span>
-                    </a>
-                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        <a class="dropdown-item" href="profile.html" th:href="@{/profile}">Profile</a>
-                        <div class="dropdown-divider"></div>
-                        <form th:action="@{/api/auth/logout}" method="post" class="form-inline">
-                            <button class="dropdown-item" type="submit">Logout</button>
-                        </form>
-                    </div>
-                </li>
-            </ul>
-        </div>
-    </nav>
-</header>
+<header th:insert="~{fragments/header :: header}"></header>
+
 <div th:replace="index::logout"></div>
 <h1>Thymeleaf - WebSecurity</h1>
 <p>This is the <b>user</b> zone</p>

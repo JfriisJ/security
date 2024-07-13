@@ -2,16 +2,71 @@
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
 <head>
     <title>Thymeleaf - WebSecurity</title>
-    <meta charset="utf-8" />
-    <link rel="stylesheet" href="../css/styles.css" th:href="@{../css/styles.css}" />
+    <meta charset="utf-8"/>
+    <link rel="stylesheet" href="../css/styles.css" th:href="@{../css/styles.css}"/>
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
     <link href="https://getbootstrap.com/docs/4.0/examples/signin/signin.css" rel="stylesheet" crossorigin="anonymous">
 </head>
+<style>
+    /* styles.css */
+
+    /* Body */
+    body {
+        background-color: #000; /* Dark background */
+        color: #fff; /* White text color */
+        font-family: Arial, sans-serif; /* Font family */
+        margin: 0;
+        padding: 20px;
+        align-items: center;
+        text-align: center;
+    }
+
+
+    /* Typography */
+    h1.display-4, h2.display-4 {
+        font-size: 2.5rem;
+        color: #4CAF50; /* Spring green color */
+        margin-bottom: 20px;
+    }
+
+    h1.display-4 {
+        margin-top: 20px;
+    }
+
+    p {
+        font-size: 1.2rem;
+        margin-bottom: 20px;
+    }
+
+    /* Links */
+    a {
+        color: #4CAF50; /* Spring green color */
+        text-decoration: none;
+    }
+
+    a:hover {
+        color: #45a049; /* Darker green on hover */
+        text-decoration: underline;
+    }
+
+    /* List */
+    ul {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    ul ul {
+        margin-bottom: 10px;
+    }
+
+    ul ul a {
+        font-size: 1.1rem;
+    }
+
+</style>
 <body>
-<header th:insert="~{fragments/header :: header}"> </header>
-
-
+<header th:insert="~{fragments/header :: header}"></header>
 <h1 class="display-4">Thymeleaf - WebSecurity</h1>
 <p>This is a demo of Thymeleaf and Spring-Security integration.</p>
 <h2>Private pages</h2>
@@ -25,7 +80,7 @@
 <ul>
     <ul>You can <a href="error.html" th:href="@{/simulateError}">simulate an exception</a> to see custom ErrorPage.</ul>
 </ul>
-<footer th:insert="~{fragments/footer :: footer}"> </footer>
+<footer th:insert="~{fragments/footer :: footer}"></footer>
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>

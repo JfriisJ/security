@@ -1,5 +1,6 @@
 package dk.friisjakobsen.security.controllers;
 
+import dk.friisjakobsen.security.models.ERole;
 import dk.friisjakobsen.security.models.Role;
 import dk.friisjakobsen.security.models.User;
 import dk.friisjakobsen.security.payload.request.LoginRequest;
@@ -15,7 +16,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -24,6 +24,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -41,191 +42,220 @@ import java.util.stream.Collectors;
 @RequestMapping("/")
 public class AuthController {
 
-	private final AuthenticationManager authenticationManager;
+    private final AuthenticationManager authenticationManager;
 
-	private final UserRepository userRepository;
+    private final UserRepository userRepository;
 
-	private final RoleRepository roleRepository;
+    private final RoleRepository roleRepository;
 
-	private final PasswordEncoder encoder;
+    private final PasswordEncoder encoder;
 
-	private final JwtUtils jwtUtils;
+    private final JwtUtils jwtUtils;
 
-	Logger logger = LoggerFactory.getLogger(AuthController.class);
+    Logger logger = LoggerFactory.getLogger(AuthController.class);
 
-	public AuthController(AuthenticationManager authenticationManager, UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder encoder, JwtUtils jwtUtils) {
-		this.authenticationManager = authenticationManager;
-		this.userRepository = userRepository;
-		this.roleRepository = roleRepository;
-		this.encoder = encoder;
-		this.jwtUtils = jwtUtils;
-	}
+    public AuthController(AuthenticationManager authenticationManager, UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder encoder, JwtUtils jwtUtils) {
+        this.authenticationManager = authenticationManager;
+        this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
+        this.encoder = encoder;
+        this.jwtUtils = jwtUtils;
+    }
 
-	@GetMapping("login")
-	@PreAuthorize("permitAll()")
-	public String login() {
-		return "security/login";
-	}
+    @GetMapping("login")
+    @PreAuthorize("permitAll()")
+    public String login() {
+        return "security/login";
+    }
 
-	@PostMapping("login")
-	@PreAuthorize("permitAll()")
-	public ResponseEntity<?> authenticateUser(LoginRequest loginRequest) {
+    @PostMapping("login")
+    @PreAuthorize("permitAll()")
+    public ResponseEntity<?> authenticateUser(LoginRequest loginRequest) {
 
-		logger.info("Login request: " + loginRequest.getUsername() + " " + loginRequest.getPassword());
+        logger.info("Login request: " + loginRequest.getUsername() + " " + loginRequest.getPassword());
 
-		Authentication authentication = authenticationManager
-				.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
 
-		if (authentication == null) {
-			logger.error("Invalid credentials");
-			return ResponseEntity.badRequest().body(new MessageResponse("Error: Invalid credentials!"));
-		}
+        if (authentication == null) {
+            logger.error("Invalid credentials");
+            return ResponseEntity.badRequest().body(new MessageResponse("Error: Invalid credentials!"));
+        }
 
-		SecurityContextHolder.getContext().setAuthentication(authentication);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
-		UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
-		ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(userDetails);
+        ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(userDetails);
 
-		List<String> roles = userDetails.getAuthorities().stream()
-				.map(item -> item.getAuthority())
-				.collect(Collectors.toList());
+        List<String> roles = userDetails.getAuthorities().stream().map(item -> item.getAuthority()).collect(Collectors.toList());
 
-		logger.info("User authenticated: " + userDetails.getUsername());
-		System.out.println("User authenticated: " + userDetails.getUsername());
-		return ResponseEntity.ok()
-				.header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
-				.header(HttpHeaders.LOCATION, "/") // Redirect to the home page
-				.body(new UserInfoResponse(userDetails.getId(),
-						userDetails.getUsername(),
-						userDetails.getEmail(),
-						roles));
+        logger.info("User authenticated: " + userDetails.getUsername());
+        System.out.println("User authenticated: " + userDetails.getUsername());
+        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, jwtCookie.toString()).header(HttpHeaders.LOCATION, "/") // Redirect to the home page
+                .body(new UserInfoResponse(userDetails.getId(), userDetails.getUsername(), userDetails.getEmail(), roles));
 
 
-	}
+    }
 
-	@GetMapping("signup")
-	public String signup(Model model, @AuthenticationPrincipal UserDetails userDetails) {
-		addAuthenticationDetails(model, userDetails);
-		return "security/signup";
-	}
+    @GetMapping("signup")
+    public String signup(Model model, @AuthenticationPrincipal UserDetails userDetails) {
+        addAuthenticationDetails(model, userDetails);
+        return "security/signup";
+    }
 
-	@PostMapping("signup")
-	public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
-		logger.info("Signup request: " + signUpRequest.getUsername() + " " + signUpRequest.getEmail() + " " + signUpRequest.getRole());
-		if (userRepository.existsByUsername(signUpRequest.getUsername())) {
-			return ResponseEntity.badRequest().body(new MessageResponse("Error: Username is already taken!"));
-		}
+    @PostMapping("signup")
+    public ResponseEntity<?> registerUser(@Valid @ModelAttribute SignupRequest signUpRequest) {
+        logger.info("Signup request: {} {} {}", signUpRequest.getUsername(), signUpRequest.getEmail(), signUpRequest.getRole());
+        if (userRepository.existsByUsername(signUpRequest.getUsername())) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Error: Username is already taken!"));
+        }
 
-		if (userRepository.existsByEmail(signUpRequest.getEmail())) {
-			return ResponseEntity.badRequest().body(new MessageResponse("Error: Email is already in use!"));
-		}
+        if (userRepository.existsByEmail(signUpRequest.getEmail())) {
+            return ResponseEntity.badRequest().body(new MessageResponse("Error: Email is already in use!"));
+        }
 
-		// Create new user's account
-		User user = new User(signUpRequest.getUsername(),
-				signUpRequest.getEmail(),
-				encoder.encode(signUpRequest.getPassword()));
+        // Create new user's account
+        User user = new User(signUpRequest.getUsername(), signUpRequest.getEmail(), encoder.encode(signUpRequest.getPassword()));
 
-		Set<String> strRoles = signUpRequest.getRole();
-		Set<Role> roles = new HashSet<>();
+        Set<String> strRoles = signUpRequest.getRole();
+        Set<Role> roles = new HashSet<>();
 
-		// Existing role assignment code...
+        if (strRoles == null) {
+            Role userRole = roleRepository.findByName(ERole.ROLE_USER).orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+            roles.add(userRole);
+        } else {
+            strRoles.forEach(role -> {
+                switch (role) {
+                    case "admin":
+                        Role adminRole = roleRepository.findByName(ERole.ROLE_ADMIN).orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                        roles.add(adminRole);
 
-		user.setRoles(roles);
-		userRepository.save(user);
+                        break;
+                    case "mod":
+                        Role modRole = roleRepository.findByName(ERole.ROLE_MODERATOR).orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                        roles.add(modRole);
 
-		// Authenticate the new user
-		UserDetailsImpl userDetails = authentication(signUpRequest.getUsername(), signUpRequest.getPassword());
+                        break;
+                    default:
+                        Role userRole = roleRepository.findByName(ERole.ROLE_USER).orElseThrow(() -> new RuntimeException("Error: Role is not found."));
+                        roles.add(userRole);
+                }
+            });
+        }
 
-		ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(userDetails);
+        user.setRoles(roles);
+        userRepository.save(user);
 
-		List<String> userRoles = userDetails.getAuthorities().stream()
-				.map(item -> item.getAuthority())
-				.collect(Collectors.toList());
+        // Authenticate the new user
+        UserDetailsImpl userDetails = authentication(signUpRequest.getUsername(), signUpRequest.getPassword());
 
-		// Create a response object that includes the redirect URL
-		Map<String, Object> response = new HashMap<>();
-		response.put("redirectUrl", "/"); // The URL to redirect to
-		response.put("userInfo", new UserInfoResponse(userDetails.getId(),
-				userDetails.getUsername(),
-				userDetails.getEmail(),
-				userRoles));
+        ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(userDetails);
 
-		return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
-				.body(response);
-	}
+        List<String> userRoles = userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
 
+        // Create a response object that includes the redirect URL
+        Map<String, Object> response = new HashMap<>();
+        response.put("userInfo", new UserInfoResponse(userDetails.getId(), userDetails.getUsername(), userDetails.getEmail(), userRoles));
+        response.put("bearerToken", jwtUtils.generateTokenFromUsername(signUpRequest.getUsername()));
 
-	@PostMapping("logout")
-	@PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
-	public ResponseEntity<?> logoutUser(HttpServletRequest request, HttpServletResponse response) {
-		logger.info("Signing out user...");
-		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		if (auth != null) {
-			new SecurityContextLogoutHandler().logout(request, response, auth);
-		}
-		SecurityContextHolder.getContext().setAuthentication(null);
-		return ResponseEntity.ok().body(new MessageResponse("You've been signed out!"));
-	}
+        // Return the response object and use thymeleaf to redirect to index.html
+        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, jwtCookie.toString()).header(HttpHeaders.LOCATION, "/") // Redirect to the home page
+                .body(response);
 
-	@GetMapping("/profile")
-	@PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
-	public String profile(Model model, @AuthenticationPrincipal UserDetails userDetails) {
-		addAuthenticationDetails(model, userDetails);
-		User user = userRepository.findByUsername(userDetails.getUsername()).get();
-		model.addAttribute("email", user.getEmail());
-		model.addAttribute("roles", user.getRoles());
-		model.addAttribute("username", user.getUsername());
-
-		System.out.println("User: " + user.getUsername() + " " + user.getEmail() + " " + user.getRoles());
-		return "shared/profile";
-	}
-
-	@PostMapping("profile/update")
-	@PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
-	public ResponseEntity<?> updateProfile(@AuthenticationPrincipal UserDetails userDetails, @RequestBody SignupRequest signUpRequest) {
-		logger.info("Updating profile for user: " + userDetails.getUsername());
-		User user = userRepository.findByUsername(userDetails.getUsername()).get();
-		user.setEmail(signUpRequest.getEmail());
-		userRepository.save(user);
-		return ResponseEntity.ok().body(new MessageResponse("Profile updated successfully!"));
-	}
-
-	@PostMapping("/update/{id}")
-	public ResponseEntity<?> updateUser(@PathVariable("id") long id, @RequestBody User user) {
-		logger.info("Updating user with id: " + id);
-		Optional<User> userData = userRepository.findById(id);
-
-		if (userData.isPresent()) {
-			User _user = userData.get();
-			_user.setUsername(user.getUsername());
-			_user.setEmail(user.getEmail());
-			_user.setPassword(user.getPassword());
-			return new ResponseEntity<>(userRepository.save(_user), HttpStatus.OK);
-		} else {
-			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-		}
-	}
-
-	private void addAuthenticationDetails(Model model, UserDetails userDetails) {
-		if (userDetails != null) {
-			model.addAttribute("isLoggedIn", true);
-			model.addAttribute("username", userDetails.getUsername());
-			model.addAttribute("roles", userDetails.getAuthorities());
-		} else {
-			model.addAttribute("isLoggedIn", false);
-		}
-	}
+    }
 
 
-	private UserDetailsImpl authentication(String username, String password){
-		Authentication authentication = authenticationManager
-				.authenticate(new UsernamePasswordAuthenticationToken(username, password));
+    @PostMapping("logout")
+    @PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
+    public ResponseEntity<?> logoutUser(HttpServletRequest request, HttpServletResponse response) {
+        logger.info("Signing out user...");
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null) {
+            new SecurityContextLogoutHandler().logout(request, response, auth);
+        }
+        SecurityContextHolder.getContext().setAuthentication(null);
+        return ResponseEntity.ok().body(new MessageResponse("You've been signed out!"));
+    }
 
-		SecurityContextHolder.getContext().setAuthentication(authentication);
+    @GetMapping("/profile")
+    @PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
+    public String profile(Model model, @AuthenticationPrincipal UserDetails userDetails) {
+        addAuthenticationDetails(model, userDetails);
+        User user = userRepository.findByUsername(userDetails.getUsername()).get();
+        model.addAttribute("email", user.getEmail());
+        model.addAttribute("roles", user.getRoles());
+        model.addAttribute("username", user.getUsername());
+        model.addAttribute("id", user.getId());
 
-		UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        System.out.println("User: " + user.getUsername() + " " + user.getEmail() + " " + user.getRoles());
+        return "shared/profile";
+    }
 
-		return userDetails;
-	}
+    @PostMapping("profile/update")
+    @PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
+    public ResponseEntity<?> updateProfile(@AuthenticationPrincipal UserDetails userDetails, @RequestBody SignupRequest signUpRequest) {
+        logger.info("Updating profile for user: " + userDetails.getUsername());
+        User user = userRepository.findByUsername(userDetails.getUsername()).get();
+        user.setEmail(signUpRequest.getEmail());
+        userRepository.save(user);
+        return ResponseEntity.ok().body(new MessageResponse("Profile updated successfully!"));
+    }
+
+    @PostMapping("/update/{id}")
+    public ResponseEntity<?> updateUser(@PathVariable("id") long id, @RequestBody User user) {
+        logger.info("Updating user with id: " + id);
+        Optional<User> userData = userRepository.findById(id);
+
+        if (userData.isPresent()) {
+            User _user = userData.get();
+            _user.setUsername(user.getUsername());
+            _user.setEmail(user.getEmail());
+            _user.setPassword(user.getPassword());
+            return new ResponseEntity<>(userRepository.save(_user), HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @PostMapping("delete/{username}")
+    public ResponseEntity<?> deleteUser(Model model, @PathVariable("username") String username) {
+        logger.info("Deleting user with id: {}", username);
+        String validUsername;
+        if (username.isEmpty()) {
+            validUsername = (model.getAttribute("username").toString());
+        } else {
+            validUsername = username;
+        }
+
+        User user = userRepository.findByUsername(validUsername).orElseThrow(() -> new RuntimeException("Error: User is not found."));
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "User with username: " + user.getUsername() + "deleted successfully!");
+
+        userRepository.deleteById(user.getId());
+
+        return ResponseEntity.ok().header(HttpHeaders.LOCATION, "/").body(response);
+    }
+
+
+    private void addAuthenticationDetails(Model model, UserDetails userDetails) {
+        if (userDetails != null) {
+            model.addAttribute("isLoggedIn", true);
+            model.addAttribute("username", userDetails.getUsername());
+            model.addAttribute("roles", userDetails.getAuthorities());
+        } else {
+            model.addAttribute("isLoggedIn", false);
+        }
+    }
+
+
+    private UserDetailsImpl authentication(String username, String password) {
+        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+
+        return userDetails;
+    }
 }

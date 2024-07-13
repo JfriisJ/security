@@ -15,17 +15,17 @@ import org.springframework.stereotype.Component;
 @Component
 public class AuthEntryPointJwt implements AuthenticationEntryPoint {
 
-	private static final Logger logger = LoggerFactory.getLogger(AuthEntryPointJwt.class);
+    private static final Logger logger = LoggerFactory.getLogger(AuthEntryPointJwt.class);
 
-	@Override
-	public void commence(HttpServletRequest request, HttpServletResponse response,
-	                     AuthenticationException authException) throws IOException, ServletException {
-		logger.error("Unauthorized error: {}", authException.getMessage());
-		logger.info("Request URI: {}", request.getRequestURI());
-		logger.info("Request Method: {}", request.getMethod());
-		logger.info("Request IP: {}", request.getRemoteAddr());
-		response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Error: Unauthorized");
-	}
+    @Override
+    public void commence(HttpServletRequest request, HttpServletResponse response,
+                         AuthenticationException authException) throws IOException, ServletException {
+        logger.error("Unauthorized error: {}", authException.getMessage());
+        logger.info("Request URI: {}", request.getRequestURI());
+        logger.info("Request Method: {}", request.getMethod());
+        logger.info("Request IP: {}", request.getRemoteAddr());
+        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Error: Unauthorized");
+    }
 
 
 }

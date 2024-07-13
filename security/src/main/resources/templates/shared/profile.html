@@ -1,105 +1,131 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Profile Page</title>
-    <meta charset="utf-8" />
-    <link rel="stylesheet" href="../css/styles.css" th:href="@{../css/styles.css}" />
+    <title>Thymeleaf - WebSecurity</title>
+    <meta charset="utf-8"/>
+    <link rel="stylesheet" href="../css/styles.css" th:href="@{../css/styles.css}"/>
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
     <link href="https://getbootstrap.com/docs/4.0/examples/signin/signin.css" rel="stylesheet" crossorigin="anonymous">
 </head>
+<style>
+    /* styles.css */
+
+    /* Body */
+    body {
+        background-color: #000; /* Dark background */
+        color: #fff; /* White text color */
+        font-family: Arial, sans-serif; /* Font family */
+        margin: 0;
+        padding: 20px;
+        align-items: center;
+        text-align: center;
+    }
+
+
+    /* Typography */
+    h1.display-4, h2.display-4 {
+        font-size: 2.5rem;
+        color: #4CAF50; /* Spring green color */
+        margin-bottom: 20px;
+    }
+
+    h1.display-4 {
+        margin-top: 20px;
+    }
+
+    p {
+        font-size: 1.2rem;
+        margin-bottom: 20px;
+    }
+
+    /* Links */
+    a {
+        color: #4CAF50; /* Spring green color */
+        text-decoration: none;
+    }
+
+    a:hover {
+        color: #45a049; /* Darker green on hover */
+        text-decoration: underline;
+    }
+
+    /* List */
+    ul {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    ul ul {
+        margin-bottom: 10px;
+    }
+
+    ul ul a {
+        font-size: 1.1rem;
+    }
+
+</style>
 <body>
-<header th:insert="~{fragments/header :: header}"> </header>
+<header th:insert="~{fragments/header :: header}"></header>
 
-<main class="container">
-    <form class="form" method="POST" th:action="@{/profile/update}">
-        <div class="row justify-content-center">
-            <div class="col-md-12">
-                <h2 class="form-signin-heading text-center">Profile</h2>
-                <p>
-                    <label for="username" class="sr-only">Username</label>
-                    <input type="text" id="username" name="username" class="form-control" placeholder="Username" required=""
-                           th:field="*{username}" readonly>
-                    <input type="text" id="username2" name="username" class="form-control" th:placeholder="user" required=""
-                           sec:authentication="name">
-                    <span sec:authentication="name">User</span>
-                </p>
-                <p>
-                    <label for="email" class="sr-only">Email</label>
-                    <input type="email" id="email" name="email" class="form-control" placeholder="Email" required=""
-                           th:field="*{email}">
-                </p>
-                <p>
-                    <label for="role" class="sr-only">Role</label>
-                    <input type="text" id="role" name="role" class="form-control" placeholder="Role" required=""  th:field="*{roles}" readonly>
-                </p>
-                <p>
-                    <button class="btn btn-lg btn-secondary btn-block" type="button" data-toggle="modal" data-target="#changePasswordModal">Change Password</button>
-                </p>
-                <button class="btn btn-lg btn-primary btn-block" type="submit">Update Profile</button>
-                <p><a text="center" href="#" th:href="@{/}">Back to home page</a></p>
-            </div>
-        </div>
-    </form>
-    <form action="#"
-          th:action="@{/update/{id}(id=${user.id})}"
-          th:object="${user}"
-          method="post">
-        <label for="name">Name</label>
-        <input type="text" th:field="*{name}" id="name" placeholder="Name">
-        <span th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></span>
-        <label for="email">Email</label>
-        <input type="text" th:field="*{email}" id="email" placeholder="Email">
-        <span th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></span>
-        <input type="submit" value="Update User">
-    </form>
-</main>
-
-<!-- Change Password Modal -->
-<div class="modal fade" id="changePasswordModal" tabindex="-1" role="dialog" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <form method="POST" th:action="@{/password/change}" onsubmit="return validatePasswordChange()">
-<!--                <div th:if="${#fields.hasErrors()}">-->
-<!--                    <div th:each="error : ${#fields.errors('*')}">-->
-<!--                        <p th:text="${error}"></p>-->
-<!--                    </div>-->
-<!--                </div>-->
-                <div class="modal-header">
-                    <h5 class="modal-title" id="changePasswordModalLabel">Change Password</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-<!--                    <input type="hidden" th:field="*{csrf.token}" />-->
-                    <div class="form-group">
-                        <label for="currentPassword">Current Password</label>
-                        <input type="password" class="form-control" id="currentPassword" name="currentPassword" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="newPassword">New Password</label>
-                        <input type="password" class="form-control" id="newPassword" name="newPassword" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="confirmNewPassword">Confirm New Password</label>
-                        <input type="password" class="form-control" id="confirmNewPassword" name="confirmNewPassword" required>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Save changes</button>
-                </div>
-            </form>
+<form class="form-signin" method="POST" action="/profile/update}">
+    <div class="row justify-content-center">
+        <div class="col-md-12">
+            <h2 class="form-signin-heading text-center">Profile</h2>
+            <p>
+                <label for="username" class="sr-only">Username</label>
+                <input type="text" id="username" name="username" class="form-control" placeholder="Username"
+                       required=""
+                       th:field="*{username}" readonly>
+            <p>
+                <label for="email" class="sr-only">Email</label>
+                <input type="email" id="email" name="email" class="form-control" placeholder="Email" required=""
+                       th:field="*{email}">
+            </p>
+            <p>
+                <label for="role" class="sr-only">Role</label>
+                <input type="text" id="role" name="role" class="form-control" placeholder="Role" required=""
+                       th:field="*{roles}" readonly>
+            </p>
+            <p>
+                <button class="btn btn-lg btn-secondary btn-block" type="button" data-toggle="modal"
+                        data-target="#changePasswordModal">Change Password
+                </button>
+            </p>
+            <button class="btn btn-lg btn-primary btn-block" type="submit">Update Profile</button>
+            <p><a text="center" href="#" th:href="@{/}">Back to home page</a></p>
         </div>
     </div>
-</div>
+</form>
 
-<footer th:insert="~{fragments/footer :: footer}"> </footer>
+<!-- Delete user -->
+<form class="form-signin" method="POST" action="/delete/{username}">
+    <div class="row justify-content-center">
+        <div class="col-md-12">
+            <h2 class="form-signin-heading text-center">Delete Profile</h2>
+            <p>
+                <label for="username" class="sr-only">Username</label>
+                <input type="text" id="id" name="username" class="form-control" placeholder="Username"
+                       required=""
+                       th:field="*{username}">
 
-<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js" integrity="sha384-T0A6YjOVTMj2hMEl2am6ntoU+aV8TwSDzD6rC45FfGftI23EL8gfPLb6U2E4zvJ" crossorigin="anonymous"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js" integrity="sha384-A3ZvDMMdO8Z2zN2mtzX2uSQQj/pVXNAAE4B97ZT8GxtOBHhwb5WF5LG7xFC5a6wD" crossorigin="anonymous"></script>
+            <button class="btn btn-lg btn-danger btn-block" type="submit">Delete Profile</button>
+        </div>
+    </div>
+</form>
+
+
+<footer th:insert="~{fragments/footer :: footer}"></footer>
+
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+        integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js"
+        integrity="sha384-T0A6YjOVTMj2hMEl2am6ntoU+aV8TwSDzD6rC45FfGftI23EL8gfPLb6U2E4zvJ"
+        crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js"
+        integrity="sha384-A3ZvDMMdO8Z2zN2mtzX2uSQQj/pVXNAAE4B97ZT8GxtOBHhwb5WF5LG7xFC5a6wD"
+        crossorigin="anonymous"></script>
 <script>
     function validatePasswordChange() {
         const newPassword = document.getElementById('newPassword').value;
