@@ -68,8 +68,6 @@
 <body>
 <header th:insert="~{fragments/header :: header}"></header>
 
-
-<div th:replace="index::logout"></div>
 <h1>Thymeleaf - WebSecurity</h1>
 <p>This is the <b>shared</b> zone</p>
 <p>Only authenticated users with roles <b>USER</b> or <b>ADMIN</b> are allowed to see this page.</p>
@@ -80,7 +78,7 @@
 <div sec:authorize="hasRole('ROLE_USER')">
     This content is only shown to <b>users</b>.
 </div>
-<p><a href="../index.html" th:href="@{/index.html}">Back to home page</a></p>
+<p><a text="center" href="#" th:href="@{/}">Back to home page</a></p>
 <footer th:insert="~{fragments/footer :: footer}"></footer>
 </body>
 </html>

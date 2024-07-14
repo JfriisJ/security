@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
 <head>
     <title>Thymeleaf - WebSecurity</title>
     <meta charset="utf-8"/>
@@ -68,12 +68,10 @@
 <body>
 <header th:insert="~{fragments/header :: header}"></header>
 
-
-<div th:replace="index::logout"></div>
 <h1>Thymeleaf - WebSecurity</h1>
 <p>This is the <b>administration</b> zone</p>
 <p>Only authenticated users with role <b>ADMIN</b> are allowed to see this page.</p>
-<p><a href="../index.html" th:href="@{/index.html}">Back to home page</a></p>
+<p><a text="center" href="#" th:href="@{/}">Back to home page</a></p>
 <footer th:insert="~{fragments/footer :: footer}"></footer>
 </body>
 </html>

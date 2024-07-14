@@ -33,8 +33,7 @@ public class ThymeleafController {
 
     @GetMapping("/simulateError")
     public String simulateError() {
-        throw new Error("Simulated error");
-//		throw new RuntimeException("Simulated error");
+		throw new RuntimeException("Simulated error");
     }
 
     private void addAuthenticationDetails(Model model, UserDetails userDetails) {

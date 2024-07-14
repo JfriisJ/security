@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>Thymeleaf - WebSecurity</title>
     <meta charset="utf-8"/>
@@ -68,15 +68,10 @@
 <body>
 <header th:insert="~{fragments/header :: header}"></header>
 
-<div th:replace="index::logout"></div>
 <h1>Thymeleaf - WebSecurity</h1>
 <p>This is the <b>user</b> zone</p>
 <p>Only authenticated users with role <b>USER</b> are allowed to see this page.</p>
-<p><a href="../index.html" th:href="@{/index.html}">Back to home page</a></p>
-<footer class="bg-dark text-white py-3 mt-auto" th:fragment="footer">
-    <div class="container text-center">
-        <p>&copy; 2024 Vennekredsen. All rights reserved.</p>
-    </div>
-</footer>
+<p><a text="center" href="#" th:href="@{/}">Back to home page</a></p>
+<footer th:insert="~{fragments/footer :: footer}"></footer>
 </body>
 </html>
