@@ -14,6 +14,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -67,58 +68,34 @@ public class WebSecurityConfig {
                 .exceptionHandling(exceptionHandling -> exceptionHandling
                         .authenticationEntryPoint(unauthorizedHandler)
                         .accessDeniedPage("/403.html"))
-//				.sessionManagement(sessionManagement -> sessionManagement
-//						.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
-//						.requestMatchers(
-//								new AntPathRequestMatcher("/", "GET"),
-//								new AntPathRequestMatcher("/index", "GET"),
-//								new AntPathRequestMatcher("/css/*", "GET"),
-//								new AntPathRequestMatcher("/js/*", "GET"),
-//								new AntPathRequestMatcher("/api/**", "GET"),
-//								new AntPathRequestMatcher("/login", "POST"),
-//								new AntPathRequestMatcher("/signup", "POST")
-//						).permitAll()
                         .requestMatchers(
                                 new AntPathRequestMatcher("/css/styles.css"),
                                 new AntPathRequestMatcher("/js/scripts.js"),
                                 new AntPathRequestMatcher("/images/**"),
                                 new AntPathRequestMatcher("/favicon.ico"),
                                 new AntPathRequestMatcher("/error.html"),
-                                new AntPathRequestMatcher("/403.html"),
-                                new AntPathRequestMatcher("/admin.html"),
-                                new AntPathRequestMatcher("/shared/index.html"),
-                                new AntPathRequestMatcher("/user/index.html"),
-                                new AntPathRequestMatcher("/admin/index.html")
+                                new AntPathRequestMatcher("/403.html")
                         ).permitAll()
                         .requestMatchers("/**").permitAll()
-                        .requestMatchers("/profile/**").permitAll()
+                        .requestMatchers("/profile/**").hasAnyRole("USER", "MODERATOR", "ADMIN")
                         .requestMatchers("/login/**").permitAll()
                         .requestMatchers("/signup/**").permitAll()
-
-//						.requestMatchers("/admin/**").hasRole("ADMIN")
-//						.requestMatchers("/user/**").hasRole("USER")
-//						.requestMatchers("/shared/**").hasAnyRole("USER", "ADMIN")
+						.requestMatchers("/admin/**").hasRole("ADMIN")
+						.requestMatchers("/user/**").hasRole("USER")
+						.requestMatchers("/shared/**").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/simulateError").permitAll()
-                        .requestMatchers("/admin/**").permitAll()
-                        .requestMatchers("/user/**").permitAll()
-                        .requestMatchers("/shared/**").permitAll()
                         .anyRequest().authenticated())
-                .formLogin(formLogin -> formLogin
-                        .loginPage("/login")
-                        .defaultSuccessUrl("/", true)
-                        .failureUrl("/error.html")
-                        .permitAll())
-                .formLogin(formLogin -> formLogin
-                        .loginPage("/signup")
-                        .defaultSuccessUrl("/", true)
-                        .failureUrl("/error.html")
-                        .permitAll())
-                .logout(logout -> logout
-                        .logoutUrl("/logout")
-                        .logoutSuccessUrl("/")
-                        .permitAll())
+//                .formLogin(formLogin -> formLogin
+//                        .loginPage("/login")
+//                        .defaultSuccessUrl("/", true)
+//                        .failureUrl("/error.html")
+//                        .permitAll())
+//                .logout(logout -> logout
+//                        .logoutUrl("/logout")
+//                        .logoutSuccessUrl("/")
+//                        .permitAll())
                 .addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
